@@ -1,4 +1,5 @@
 import subprocess, os
+import argparse
 import youtube_dl
 from subprocess import check_call
 from common.log import setup_logging
@@ -45,12 +46,25 @@ class Video(object):
 def main():
     pass
 
-if __name__ == '__main__':
-    #main()
-    with open("trainset.json") as f:
-        json_data = json.load(f)
+def parse_args():
+    """Parse input arguments."""
+    parser = argparse.ArgumentParser(description='Arguments for youtube_dl')   
+    # Set input video path
+    parser.add_argument('--input', dest='json_path', help='json file of playlist. (youtube-dl -j <playlist> >> <json_path>)',
+                        required=True, type = str)    
+    parser.add_argument('--output', dest='output_folder', help='output folder',
+                        required=True, type = str)    
+    args = parser.parse_args()
+    return args
 
-    for entry in json_data['entries']:
-        v = Video(d_set_dir='data/clouds', yt_id=entry['id'])
-        v.dl_and_cut()
+if __name__ == '__main__':
+    args = parse_args()
+    #main()
+    with open(args.json_path) as f:
+        json_data = json.load(f)
+    
+    for i in range(5): #retry 5 times
+        for entry in json_data['entries']:
+            v = Video(d_set_dir=args.output_folder, yt_id=entry['id'])
+            v.dl_and_cut()
 
